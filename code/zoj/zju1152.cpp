@@ -17,7 +17,7 @@ int main(){
 			}
 			cout<<"Case "<< index<<":"<<pairs<<endl;
 		}
-		if(n) cout<<endl;
+		if(Nblock) cout<<endl;
 	}
 }
 

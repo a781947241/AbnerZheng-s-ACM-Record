@@ -1,0 +1,436 @@
+set encoding=utf-8
+set termencoding=utf-8
+set fileencodings=utf-8,chinese,latin-1
+if has("win32")
+ set fileencoding=chinese
+else
+ set fileencoding=utf-8
+endif
+language messages zh_CN.utf-8
+" 设定不与以前版本兼
+set nocompatible
+" 设置配色方案
+colorscheme evening
+" 显示行号
+set nu
+" 侦测文件类型
+filetype on
+" 设置当文件被改动时自动载入
+set autoread
+" 记录历史的行数
+set history=100
+" 显示语法高亮
+syntax enable
+syntax on
+" 在处理未保存或只读文件的时候，弹出确认
+set confirm
+" 与windows共享剪贴板
+set clipboard+=unnamed
+" 载入文件类型插件
+filetype plugin on
+" 为特定文件类型载入相关缩进文件
+filetype indent on
+" 保存全局变量
+set viminfo+=!
+" 带有如下符号的单词不要被换行分割
+set iskeyword+=_,$,@,%,#,-
+" 设置鼠标一直可用
+set mouse=a
+" 高亮当前行
+set cursorline
+" 命令行高度
+set cmdheight=1
+" 启动的时候不显示那个援助索马里儿童的提示
+set shortmess=atI
+" 不让vim发出讨厌的滴滴声
+set noerrorbells
+" 在被分割的窗口间显示空白，便于阅读
+set fillchars=vert:\ ,stl:\ ,stlnc:\
+""""""""""""""""""""""""""""
+" 文件设置
+""""""""""""""""""""""""""""
+" 不要备份文件（覆盖文件时不备份）
+set nobackup
+" 不要生成swap文件，当buffer被丢弃的时候隐藏它
+setlocal noswapfile
+set bufhidden=hide
+" 字符间插入的像素行数目
+set linespace=0
+" 增强模式中的命令行自动完成操作
+set wildmenu
+" 置粘贴模式，使得粘贴不错位
+" set paste
+
+" 保存文件，用习惯了Ctrl+S了
+" nmap <C-s> <esc>:w<CR>
+" imap <C-s> <esc>:w<CR>
+noremap <C-S> :update<CR>
+vnoremap <C-S> <C-C>:update<CR>
+inoremap <C-S> <C-O>:update<CR>
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 搜索和匹配
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 高亮显示匹配的括号
+set showmatch
+" 高亮显示被找到的句子（phrases）
+"set hlsearch
+" 在搜索时，输入的词句的逐字符高亮（类似firefox的搜索），即输入搜索内容时就显示搜索结果
+set incsearch
+" 搜索时忽略大小写
+set ignorecase
+" 不要闪烁
+set novisualbell
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 文本格式和排版
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 自动格式化
+set formatoptions=tcrqn
+" 继承前一行的缩进方式，特别适用于多行注释
+set autoindent
+" 为C程序提供自动缩进
+set smartindent
+" 使用C样式的缩进
+set cindent
+" 制表符为4
+set tabstop=4
+" 统一缩进为4
+" 使得按退格键时可以一次删掉 4 个空格
+set softtabstop=4
+" 设定 << 和 >> 命令移动时的宽度为 4
+set shiftwidth=4
+" 不要用空格代替制表符
+set noexpandtab
+" 设置每行120个字符自动换行
+set textwidth=120
+filetype off
+" 此处规定Vundle的路径
+set rtp+=$VIM/vimfiles/bundle/vundle/
+
+" 此处规定插件的安装路径
+call vundle#rc('$VIM/vimfiles/bundle')
+
+Bundle 'gmarik/vundle'
+filetype plugin indent on
+" 自动切换当前目录为当前文件所在的目录
+set autochdir
+" 折叠代码
+set foldmethod=syntax
+" 文件打开时不折叠
+set foldlevel=100
+            
+"""""""""""""""""""""""""""""""""""""""""""
+"自动实例括号
+"""""""""""""""""""""""""""""""""""""""""""
+inoremap ( ()<ESC>i
+inoremap ) <c-r>=ClosePair(')')<CR>
+inoremap { {}<ESC>i
+inoremap } <c-r>=ClosePair('}')<CR>
+inoremap [ []<ESC>i
+inoremap ] <c-r>=ClosePair(']')<CR>
+inoremap ' ''<ESC>i
+inoremap " ""<ESC>i
+function ClosePair(char)
+ if getline('.')[col('.') - 1] == a:char
+  return "\<Right>"
+ else
+  return a:char
+ endif
+endf
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""
+" set mapleader
+""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let mapleader = ","
+" platform
+function! MySys()
+        if has("win32")
+                return "windows"
+        else
+                return "linux"
+        endif
+endfunction
+" if file not opened, create a new tab, or switch to the opened file
+function! SwitchToBuf(filename)
+        " find in current tab
+        let bufwinnr = bufwinnr(a:filename)
+        if bufwinnr != -1
+                exec bufwinnr . "wincmd w"
+                return
+        else
+                " search each tab
+                tabfirst
+                let tb = 1
+        while tb <= tabpagenr("$")
+                        let bufwinnr = bufwinnr(a:filename)
+                        if bufwinnr != -1
+                                exec "normal " . tb . "gt"
+                                exec bufwinnr . "wincmd w"
+                                return
+                        endif
+                        tabnext
+                        let tb = tb +1
+                endwhile
+                " not exist, new tab
+                exec "tabnew " . a:filename
+        endif
+endfunction
+" fast edit .vimrc
+if MySys() == 'linux'
+        " fast reloading of the .vimrc
+        map <silent> <leader>ss :source ~/.vimrc<cr>
+        " fast editing of the .vimrc
+        map <silent> <leader>ee :call SwitchToBuf("~/.vimrc")<cr>
+        " when .vimrc is edited, reload it
+        autocmd! bufwritepost .vimrc source ~/.vimrc
+elseif MySys() == 'windows'
+        " Set helplang
+    set helplang=cn
+    "Fast reloading of the _vimrc
+    map <silent> <leader>ss :source ~/_vimrc<cr>
+    "Fast editing of _vimrc
+    map <silent> <leader>ee :call SwitchToBuf("~/_vimrc")<cr>
+    "When _vimrc is edited, reload it
+    autocmd! bufwritepost _vimrc source ~/_vimrc
+endif
+if MySys() == 'windows'
+    source $VIMRUNTIME/mswin.vim
+    behave mswin
+endif
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""""""
+" 插件
+""""""""""""""""""""""""""""""""""""""""""""" 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""
+"加入工程使得能够访问ctags
+""""""""""""""""""""""""""""""
+"project1"
+set tags=tags
+set autochdir
+"后面的工程加在tags变量上
+""""""""""""""""""""""""""""""
+" 设置Taglist
+""""""""""""""""""""""""""""""
+" 按照名称排序
+let Tlist_Sort_Type = "name"
+" 在右侧显示窗口
+let Tlist_Use_left_Window = 1
+" 如果只有一个buffer，kill窗口也kill掉buffer
+let Tlist_Exist_OnlyWindow = 1
+" 使taglist只显示当前文件tag，其它文件的tag都被折叠起来(同时显示多个文件中的tag时)
+let Tlist_File_Fold_Auto_Close = 1
+" 不要显示折叠树
+let Tlist_Enable_Fold_Column = 1
+"不同时显示多个文件的tag，只显示当前文件的
+let Tlist_Show_One_File = 1  
+" 键盘映射
+nmap tl :TlistToggle<cr>
+"""""""""""""""""""""""""""""""""""""""""""""
+"设置 winManager winManager管理netrw和Taglist。
+"""""""""""""""""""""""""""""""""""""""""""""
+let g:winManagerWindowLayout = "FileExplorer|TagList"
+let g:persistentBehaviour = 0
+let g:winManagerWidth = 30
+let g:defaultExplorer = 0
+nmap <C-W><C-F> :FirstExplorerWindow<cr>
+nmap <C-W><C-B> :BottomExplorerWindow<cr>
+"nmap <silent> <F8> :WMToggle<cr>
+nmap wm :WMToggle<cr>
+"设置 netrw
+""""""""""""""""""""""""""""""
+"let g:netrw_winsize = 30
+"nmap <silent> <leader>fe :Sexplore!<cr>
+"let Tlist_File_Fold_Auto_Close=1
+" 快速切换头文件/源文件
+"nnoremap <silent><F12>:A<cr>
+""nmap <silent><F12>:A<CR>
+"在工程中快速查找
+"nnoremap <silent><F3>:Grep<cr>
+""""""""""""""""""""""""""""""
+"设置 MiniBufExploer
+""""""""""""""""""""""""""""""
+" quickfix模式
+autocmd FileType c,cpp  map <buffer> <leader><space> :w<cr>:make<cr>
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""
+"F5编译和运行C++程序
+"F6编译和运行C程序
+""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" C的编译和运行
+map <F6> :call CompileRunGcc()<CR>
+func! CompileRunGcc()
+exec "w"
+exec "!gcc % -o %<"
+exec "! ./%<"
+endfunc
+" C++的编译和运行
+map <F5> :call CompileRunGpp()<CR>
+func! CompileRunGpp()
+exec "w"
+exec "!g++ % -o %<"
+exec "! ./%<"
+endfunc
+ 
+source $VIMRUNTIME/vimrc_example.vim
+source $VIMRUNTIME/mswin.vim
+behave mswin
+set diffexpr=MyDiff()
+function MyDiff()
+  let opt = '-a --binary '
+  if &diffopt =~ 'icase' | let opt = opt . '-i ' | endif
+  if &diffopt =~ 'iwhite' | let opt = opt . '-b ' | endif
+  let arg1 = v:fname_in
+  if arg1 =~ ' ' | let arg1 = '"' . arg1 . '"' | endif
+  let arg2 = v:fname_new
+  if arg2 =~ ' ' | let arg2 = '"' . arg2 . '"' | endif
+  let arg3 = v:fname_out
+  if arg3 =~ ' ' | let arg3 = '"' . arg3 . '"' | endif
+  let eq = ''
+  if $VIMRUNTIME =~ ' '
+    if &sh =~ '\<cmd'
+      let cmd = '""' . $VIMRUNTIME . '\diff"'
+      let eq = '"'
+    else
+      let cmd = substitute($VIMRUNTIME, ' ', '" ', '') . '\diff"'
+    endif
+  else
+    let cmd = $VIMRUNTIME . '\diff'
+  endif
+  silent execute '!' . cmd . ' ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3 . eq
+endfunction
+
+" 自动补全(ctrl-p)时的一些选项： 多于一项时显示菜单，最长选择; 显示当前选择的额外信息
+if v:version >= 700
+    set completeopt=menu,longest,preview                     
+endif
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""""""""""
+" 状态行相关动作
+"""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 显示状态栏 (默认值为 1, 无法显示状态栏)
+set laststatus=2
+" 状态行颜色
+highlight StatusLine guifg=SlateBlue guibg=Yellow
+highlight StatusLineNC guifg=Gray guibg=White
+function! CurDir()
+    let curdir = substitute(getcwd(), '/Users/amir/', "~/", "g")
+return curdir
+endfunction
+"""""""""""""""""""""""""""""""
+"状态行显示内容
+"""""""""""""""""""""""""""""""
+" %F 当前文件名
+" %m    当前文件修改状态
+" %r    当前文件是否只读
+" %Y    当前文件类型
+" %{&fileformat}     当前文件编码
+" %b    当前光标处字符的 ASCII 码值
+" %B    当前光标处字符的十六进制值
+" %l    当前光标行号
+" %c    当前光标列号
+" %V    当前光标虚拟列号 (根据字符所占字节数计算)
+" %p    当前行占总行数的百分比
+" %%    百分号
+" %L    当前文件总行数      
+set statusline=\ %F%m%r%h\ %w\ \ CWD:\ %r%{CurDir()}%h\ \ \ Line:\ %l/%L:%c
+                            " 设置在状态行显示的信息如下：
+                            "
+                           
+                          
+set nowrapscan
+"Highlight current
+if has("gui_running")
+  set cursorline
+  hi cursorline guibg=#333333
+  hi CursorColumn guibg=#333333
+endif
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => VIM userinterface
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"Set 7 lines to the curors - when moving vertical..
+set so=7
+"Do not redraw, when running macros.. lazyredraw
+set lz
+"Change buffer - without saving
+set hid
+"Set magic on
+set magic
+"How many tenths of a second to blink
+set mat=2
+set lines=40
+set columns=100
+"""""""""""""""""""""""""""""""""""""""""""""""""""
+"菜单栏、工具栏显示与隐藏的切换
+"""""""""""""""""""""""""""""""""""""""""""""""""""
+set guioptions-=T
+set guioptions-=m
+map <silent> <F4> :if &guioptions =~# 'T' <Bar>
+        \set guioptions-=T <Bar>
+        \set guioptions-=m <bar>
+    \else <Bar>
+        \set guioptions+=T <Bar>
+        \set guioptions+=m <Bar>
+    \endif<CR>
+""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 日历插件设置
+""""""""""""""""""""""""""""""""""""""""""""""""""""
+" let g:calendar_diary = /calendar
+" map ca :Calendar<cr>
+
+" 让 gvim 支持 Alt+n 来切换标签页
+function! BufPos_ActivateBuffer(num)
+    let l:count = 1
+    for i in range(1, bufnr("$"))
+        if buflisted(i) && getbufvar(i, "&modifiable")
+            if l:count == a:num
+                exe "buffer " . i
+                return
+            endif
+            let l:count = l:count + 1
+        endif
+    endfor
+    echo "No buffer!"
+endfunction
+function! BufPos_Initialize()
+    for i in range(1, 9)
+        exe "map <M-" . i . "> :call BufPos_ActivateBuffer(" . i . ")<CR>"
+    endfor
+    exe "map <M-0> :call BufPos_ActivateBuffer(10)<CR>"
+endfunction
+autocmd VimEnter * call BufPos_Initialize()
+" 按F11键让VIM全屏
+if has('gui_running') && has("win32")
+ map <F11> <Esc>:call libcallnr("gvimfullscreen.dll", "ToggleFullScreen", 0)<CR>
+endif
+" 自动载入_vimrc
+autocmd! bufwritepost _vimrc source %
+
+Bundle 'JavaScript-syntax'
+Bundle 'jQuery'
+Bundle 'othree/html5.vim'
+Bundle 'groenewege/vim-less'
+Bundle 'Markdown'
+Bundle 'Markdown-syntax'
+Bundle 'php.vim-html-enhanced'
+Bundle "pangloss/vim-javascript"
+Bundle 'Shougo/neocomplcache'
+Bundle "MarcWeber/vim-addon-mw-utils"
+Bundle "tomtom/tlib_vim"
+Bundle "snipmate-snippets"
+Bundle "garbas/vim-snipmate"
+
+"自定义关联文件类型
+au BufNewFile,BufRead *.less set filetype=css
+au BufNewFile,BufRead *.phtml set filetype=php
+au BufRead,BufNewFile *.js set ft=javascript.jquery
+
+"---NeoComplCache 启动
+let g:neocomplcache_enable_at_startup = 1 
+
